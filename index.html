@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>音声録音</title>
+    <title>OtoRecMe - おとりこみ</title>
     <style>
       * {
         margin: 0;
@@ -37,10 +37,23 @@
       }
 
       h1 {
-        font-size: 1.5rem;
+        font-size: 1.8rem;
+        font-weight: 400;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.95);
+      }
+
+      .subtitle {
+        font-size: 1rem;
         font-weight: 300;
-        margin-bottom: 2rem;
-        color: rgba(255, 255, 255, 0.9);
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      .description {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
       }
 
       .button-group {
@@ -151,7 +164,11 @@
   </head>
   <body>
     <div class="container">
-      <h1>🎙️ システム音声録音</h1>
+      <h1>🎙️ OtoRecMe <span class="subtitle">-おとりこみ-</span></h1>
+      <p class="description">
+        PCから流れる音声を録音して保存できます。<br />
+        Web会議・動画・音楽など、スピーカーから出る音をそのままキャプチャ。
+      </p>
 
       <div class="timer" id="timer">00:00</div>
 
