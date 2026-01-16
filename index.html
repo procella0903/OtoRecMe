@@ -232,6 +232,12 @@
       // 録音開始
       startBtn.addEventListener("click", async () => {
         try {
+          // スマホ・タブレットなど、画面共有がサポートされていない環境のチェック
+          if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+            status.textContent = "⚠️ このデバイスでは利用できません。PCのブラウザからアクセスしてください。";
+            return;
+          }
+
           // システム音声を含む画面共有を要求
           stream = await navigator.mediaDevices.getDisplayMedia({
             video: true,
