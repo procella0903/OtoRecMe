@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ja">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>音声録音</title>
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(
+          135deg,
+          #1a1a2e 0%,
+          #16213e 50%,
+          #0f3460 100%
+        );
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        color: #fff;
+      }
+
+      .container {
+        text-align: center;
+        padding: 3rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 24px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+      }
+
+      h1 {
+        font-size: 1.5rem;
+        font-weight: 300;
+        margin-bottom: 2rem;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .button-group {
+        display: flex;
+        gap: 1rem;
+        justify-content: center;
+        margin-bottom: 2rem;
+      }
+
+      button {
+        padding: 1rem 2rem;
+        font-size: 1.1rem;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-weight: 500;
+      }
+
+      #startBtn {
+        background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+        color: white;
+      }
+
+      #startBtn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
+      }
+
+      #stopBtn {
+        background: linear-gradient(135deg, #4a4a4a 0%, #6a6a6a 100%);
+        color: white;
+      }
+
+      #stopBtn:hover:not(:disabled) {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(100, 100, 100, 0.4);
+      }
+
+      button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none !important;
+      }
+
+      #status {
+        font-size: 1rem;
+        color: rgba(255, 255, 255, 0.7);
+        min-height: 1.5rem;
+      }
+
+      .recording {
+        animation: pulse 1.5s infinite;
+      }
+
+      @keyframes pulse {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.5;
+        }
+      }
+
+      .recording-indicator {
+        display: inline-block;
+        width: 12px;
+        height: 12px;
+        background: #e94560;
+        border-radius: 50%;
+        margin-right: 8px;
+        animation: blink 1s infinite;
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0.3;
+        }
+      }
+
+      .timer {
+        font-size: 2.5rem;
+        font-weight: 200;
+        margin: 1.5rem 0;
+        font-family: "Courier New", monospace;
+        color: rgba(255, 255, 255, 0.9);
+      }
+
+      .hint {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.5);
+        margin-top: 1.5rem;
+        max-width: 300px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>🎙️ システム音声録音</h1>
+
+      <div class="timer" id="timer">00:00</div>
+
+      <div class="button-group">
+        <button id="startBtn">録音開始</button>
+        <button id="stopBtn" disabled>停止</button>
+      </div>
+
+      <div id="status">待機中</div>
+
+      <p class="hint">
+        ※ 録音開始時に画面共有ダイアログが表示されます。<br />
+        「システム音声を共有」にチェックを入れてください。
+      </p>
+    </div>
+
+    <script>
+      let mediaRecorder = null;
+      let recordedChunks = [];
+      let stream = null;
+      let timerInterval = null;
+      let startTime = null;
+      let isRecording = false; // 録音中フラグ
+
+      const startBtn = document.getElementById("startBtn");
+      const stopBtn = document.getElementById("stopBtn");
+      const status = document.getElementById("status");
+      const timer = document.getElementById("timer");
+
+      // タブを閉じようとしたときの警告
+      window.addEventListener("beforeunload", (event) => {
+        if (isRecording) {
+          event.preventDefault();
+          // 現代のブラウザではカスタムメッセージは無視され、標準の警告が表示される
+          event.returnValue =
+            "録音中です。ページを離れると録音データが失われます。";
+          return event.returnValue;
+        }
+      });
+
+      // タイマー更新
+      function updateTimer() {
+        const elapsed = Math.floor((Date.now() - startTime) / 1000);
+        const minutes = Math.floor(elapsed / 60)
+          .toString()
+          .padStart(2, "0");
+        const seconds = (elapsed % 60).toString().padStart(2, "0");
+        timer.textContent = `${minutes}:${seconds}`;
+      }
+
+      // 録音開始
+      startBtn.addEventListener("click", async () => {
+        try {
+          // システム音声を含む画面共有を要求
+          stream = await navigator.mediaDevices.getDisplayMedia({
+            video: true,
+            audio: {
+              echoCancellation: false,
+              noiseSuppression: false,
+              autoGainControl: false,
+            },
+          });
+
+          // 音声トラックがあるか確認
+          const audioTracks = stream.getAudioTracks();
+          if (audioTracks.length === 0) {
+            throw new Error(
+              "音声が共有されていません。「システム音声を共有」にチェックを入れてください。"
+            );
+          }
+
+          // ビデオトラックは不要なので停止
+          stream.getVideoTracks().forEach((track) => track.stop());
+
+          // 音声のみのストリームを作成
+          const audioStream = new MediaStream(audioTracks);
+
+          // MediaRecorderを設定
+          recordedChunks = [];
+          mediaRecorder = new MediaRecorder(audioStream, {
+            mimeType: "audio/webm;codecs=opus",
+          });
+
+          // 共有対象（タブ/ウィンドウ）が閉じられたときの自動停止
+          audioTracks[0].addEventListener('ended', () => {
+            if (mediaRecorder && mediaRecorder.state !== "inactive") {
+              console.log("共有対象が終了しました。録音を自動停止します。");
+              status.textContent = "共有対象が終了しました。保存中...";
+              stopBtn.click();  // 停止ボタンをクリックして通常の停止処理を実行
+            }
+          });
+
+          mediaRecorder.ondataavailable = (event) => {
+            if (event.data.size > 0) {
+              recordedChunks.push(event.data);
+            }
+          };
+
+          mediaRecorder.onstop = async () => {
+            // 録音データをBlobに変換
+            const blob = new Blob(recordedChunks, { type: "audio/webm" });
+
+            // ファイル名を生成
+            const now = new Date();
+            const timestamp =
+              now.getFullYear() +
+              String(now.getMonth() + 1).padStart(2, "0") +
+              String(now.getDate()).padStart(2, "0") +
+              "_" +
+              String(now.getHours()).padStart(2, "0") +
+              String(now.getMinutes()).padStart(2, "0") +
+              String(now.getSeconds()).padStart(2, "0");
+            const filename = `recording_${timestamp}.webm`;
+
+            // File System Access APIが使える場合はそちらを使用
+            if ("showSaveFilePicker" in window) {
+              try {
+                const handle = await window.showSaveFilePicker({
+                  suggestedName: filename,
+                  types: [
+                    {
+                      description: "WebM Audio",
+                      accept: { "audio/webm": [".webm"] },
+                    },
+                  ],
+                });
+                const writable = await handle.createWritable();
+                await writable.write(blob);
+                await writable.close();
+                status.textContent = `保存完了: ${handle.name}`;
+                status.classList.remove("recording");
+                return;
+              } catch (err) {
+                // ユーザーがキャンセルした場合
+                if (err.name === "AbortError") {
+                  status.textContent = "保存がキャンセルされました";
+                  status.classList.remove("recording");
+                  return;
+                }
+                console.error("File System Access API error:", err);
+                // フォールバック処理へ
+              }
+            }
+
+            // フォールバック: 従来のダウンロードリンク方式
+            const url = URL.createObjectURL(blob);
+
+            const existingLink = document.getElementById("downloadLink");
+            if (existingLink) {
+              existingLink.remove();
+            }
+
+            const downloadBtn = document.createElement("a");
+            downloadBtn.id = "downloadLink";
+            downloadBtn.href = url;
+            downloadBtn.download = filename;
+            downloadBtn.textContent = `💾 ${filename} を保存`;
+            downloadBtn.style.cssText = `
+              display: inline-block;
+              margin-top: 1rem;
+              padding: 0.8rem 1.5rem;
+              background: linear-gradient(135deg, #00b894 0%, #00cec9 100%);
+              color: white;
+              text-decoration: none;
+              border-radius: 8px;
+              font-weight: 500;
+              transition: all 0.3s ease;
+            `;
+            downloadBtn.onmouseover = () => {
+              downloadBtn.style.transform = "translateY(-2px)";
+              downloadBtn.style.boxShadow = "0 6px 20px rgba(0, 184, 148, 0.4)";
+            };
+            downloadBtn.onmouseout = () => {
+              downloadBtn.style.transform = "none";
+              downloadBtn.style.boxShadow = "none";
+            };
+
+            document.querySelector(".container").appendChild(downloadBtn);
+
+            status.textContent = "録音完了！下のボタンから保存してください";
+            status.classList.remove("recording");
+          };
+
+          // 録音開始
+          mediaRecorder.start(1000); // 1秒ごとにデータを収集
+          isRecording = true;
+
+          // UI更新
+          startBtn.disabled = true;
+          stopBtn.disabled = false;
+          status.innerHTML =
+            '<span class="recording-indicator"></span>録音中...';
+          status.classList.add("recording");
+
+          // タイマー開始
+          startTime = Date.now();
+          timer.textContent = "00:00";
+          timerInterval = setInterval(updateTimer, 1000);
+        } catch (err) {
+          console.error("録音開始エラー:", err);
+          status.textContent = `エラー: ${err.message}`;
+
+          // ストリームをクリーンアップ
+          if (stream) {
+            stream.getTracks().forEach((track) => track.stop());
+          }
+        }
+      });
+
+      // 録音停止
+      stopBtn.addEventListener("click", () => {
+        if (mediaRecorder && mediaRecorder.state !== "inactive") {
+          mediaRecorder.stop();
+        }
+
+        if (stream) {
+          stream.getTracks().forEach((track) => track.stop());
+        }
+
+        // タイマー停止
+        if (timerInterval) {
+          clearInterval(timerInterval);
+          timerInterval = null;
+        }
+
+        // UI更新
+        startBtn.disabled = false;
+        stopBtn.disabled = true;
+        isRecording = false;
+      });
+    </script>
+  </body>
+</html>

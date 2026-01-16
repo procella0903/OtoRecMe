@@ -1,0 +1,20 @@
+# 依存関係
+node_modules/
+
+# 環境設定
+.env
+.env.local
+
+# OS生成ファイル
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# 録音ファイル
+*.webm
+*.wav
+*.mp3
+recordings/
