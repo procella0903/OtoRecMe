@@ -1,14 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ja">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>OtoRecMe - おとりこみ</title>
+    <title>OtoRecMe - おとりこみ | PC音声・スピーカー出力を無料で録音</title>
+
+    <!-- SEO メタタグ -->
+    <meta
+      name="description"
+      content="PCから流れる音声を無料で録音・保存できるWebアプリ。Web会議、動画、音楽など、スピーカー出力をそのままキャプチャ。インストール不要、ブラウザだけで使えます。"
+    />
+    <meta
+      name="keywords"
+      content="PC音声 録音, スピーカー出力 録音, Web会議 録音, システム音声 キャプチャ, 音声記録, 無料"
+    />
+    <meta name="author" content="procella0903" />
+    <link rel="canonical" href="https://procella0903.github.io/OtoRecMe/" />
+
+    <!-- OGP (Open Graph Protocol) -->
+    <meta property="og:type" content="website" />
+    <meta
+      property="og:title"
+      content="OtoRecMe - おとりこみ | PC音声を無料で録音"
+    />
+    <meta
+      property="og:description"
+      content="PCから流れる音声を無料で録音・保存。Web会議、動画、音楽など、スピーカー出力をそのままキャプチャできるWebアプリ。"
+    />
+    <meta
+      property="og:url"
+      content="https://procella0903.github.io/OtoRecMe/"
+    />
+    <meta
+      property="og:image"
+      content="https://procella0903.github.io/OtoRecMe/icons/icon-512.png"
+    />
+    <meta property="og:site_name" content="OtoRecMe" />
+    <meta property="og:locale" content="ja_JP" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary" />
+    <meta name="twitter:title" content="OtoRecMe - PC音声を無料で録音" />
+    <meta
+      name="twitter:description"
+      content="PCから流れる音声を無料で録音・保存。Web会議、動画、音楽など、スピーカー出力をキャプチャ。"
+    />
+    <meta
+      name="twitter:image"
+      content="https://procella0903.github.io/OtoRecMe/icons/icon-512.png"
+    />
+
+    <!-- PWA 関連 -->
+    <link rel="manifest" href="manifest.json" />
+    <meta name="theme-color" content="#1a1a2e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta
+      name="apple-mobile-web-app-status-bar-style"
+      content="black-translucent"
+    />
+    <meta name="apple-mobile-web-app-title" content="OtoRecMe" />
+    <link rel="apple-touch-icon" href="icons/icon-192.png" />
+
+    <!-- ファビコン -->
+    <link rel="icon" type="image/png" sizes="32x32" href="icons/icon-192.png" />
+
+    <!-- 構造化データ (JSON-LD) -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebApplication",
+        "name": "OtoRecMe - おとりこみ",
+        "description": "PCから流れる音声を無料で録音・保存できるWebアプリ。Web会議、動画、音楽など、スピーカー出力をそのままキャプチャ。",
+        "url": "https://procella0903.github.io/OtoRecMe/",
+        "applicationCategory": "MultimediaApplication",
+        "operatingSystem": "Windows, macOS, Linux",
+        "browserRequirements": "Chrome, Edge, または Chromium系ブラウザ",
+        "offers": {
+          "@type": "Offer",
+          "price": "0",
+          "priceCurrency": "JPY"
+        },
+        "author": {
+          "@type": "Person",
+          "name": "procella0903"
+        },
+        "featureList": [
+          "PC音声の録音",
+          "スピーカー出力のキャプチャ",
+          "Web会議の記録",
+          "ローカル保存（プライバシー保護）"
+        ]
+      }
+    </script>
+
     <style>
       * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
+      }
+
+      html {
+        scroll-behavior: smooth;
       }
 
       body {
@@ -20,10 +113,16 @@
           #0f3460 100%
         );
         min-height: 100vh;
-        display: flex;
-        justify-content: center;
-        align-items: center;
         color: #fff;
+      }
+
+      /* アプリ部分 - 画面中央に配置 */
+      .app-section {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 2rem 1rem;
       }
 
       .container {
@@ -34,6 +133,8 @@
         backdrop-filter: blur(10px);
         border: 1px solid rgba(255, 255, 255, 0.1);
         box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+        margin-top: auto;
+        margin-bottom: auto;
       }
 
       h1 {
@@ -73,22 +174,26 @@
         font-weight: 500;
       }
 
-      #startBtn {
+      #startBtn,
+      #floatingStartBtn {
         background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
         color: white;
       }
 
-      #startBtn:hover:not(:disabled) {
+      #startBtn:hover:not(:disabled),
+      #floatingStartBtn:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
       }
 
-      #stopBtn {
+      #stopBtn,
+      #floatingStopBtn {
         background: linear-gradient(135deg, #4a4a4a 0%, #6a6a6a 100%);
         color: white;
       }
 
-      #stopBtn:hover:not(:disabled) {
+      #stopBtn:hover:not(:disabled),
+      #floatingStopBtn:hover:not(:disabled) {
         transform: translateY(-2px);
         box-shadow: 0 6px 20px rgba(100, 100, 100, 0.4);
       }
@@ -166,36 +271,460 @@
         margin-left: auto;
         margin-right: auto;
       }
+
+      /* スクロール誘導インジケーター（アプリUIの下部にくっつく） */
+      .scroll-indicator {
+        margin-top: auto;
+        padding-bottom: 1rem;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+        color: rgba(255, 255, 255, 0.5);
+        font-size: 0.85rem;
+        text-align: center;
+        flex-shrink: 0;
+      }
+
+      .scroll-indicator .arrow {
+        font-size: 1.5rem;
+        animation: bounce 2s infinite;
+      }
+
+      @keyframes bounce {
+        0%, 20%, 50%, 80%, 100% {
+          transform: translateY(0);
+        }
+        40% {
+          transform: translateY(-8px);
+        }
+        60% {
+          transform: translateY(-4px);
+        }
+      }
+
+      /* セクション間のグラデーション */
+      .section-transition {
+        height: 80px;
+        background: linear-gradient(
+          180deg,
+          #0f3460 0%,
+          #0a2647 50%,
+          #0f3460 100%
+        );
+        position: relative;
+      }
+
+      .section-transition::before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(
+          90deg,
+          transparent 0%,
+          rgba(233, 69, 96, 0.5) 50%,
+          transparent 100%
+        );
+      }
+
+      /* ===== 追従するミニ操作UI ===== */
+      .floating-controls {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        background: rgba(26, 26, 46, 0.95);
+        backdrop-filter: blur(10px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        padding: 0.75rem 1rem;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        gap: 1rem;
+        z-index: 1000;
+        transform: translateY(-100%);
+        opacity: 0;
+        transition: transform 0.3s ease, opacity 0.3s ease;
+      }
+
+      .floating-controls.visible {
+        transform: translateY(0);
+        opacity: 1;
+      }
+
+      .floating-controls .floating-timer {
+        font-size: 1.5rem;
+        font-weight: 200;
+        font-family: "Courier New", monospace;
+        color: rgba(255, 255, 255, 0.9);
+        min-width: 70px;
+      }
+
+      .floating-controls button {
+        padding: 0.5rem 1rem;
+        font-size: 0.9rem;
+      }
+
+      .floating-controls .floating-hint {
+        font-size: 0.75rem;
+        color: rgba(255, 255, 255, 0.5);
+        max-width: 280px;
+        text-align: left;
+        white-space: nowrap;
+      }
+
+      /* 画面幅が狭い場合はヒントを非表示 */
+      @media (max-width: 700px) {
+        .floating-controls .floating-hint {
+          display: none;
+        }
+      }
+
+      .floating-controls .floating-status {
+        font-size: 0.85rem;
+        color: rgba(255, 255, 255, 0.7);
+      }
+
+      /* ===== SEOコンテンツセクション ===== */
+      .seo-content {
+        background: linear-gradient(180deg, #0f3460 0%, #1a1a2e 100%);
+        padding: 4rem 2rem;
+      }
+
+      .seo-content .content-wrapper {
+        max-width: 800px;
+        margin: 0 auto;
+      }
+
+      .seo-content h2 {
+        font-size: 1.6rem;
+        font-weight: 500;
+        margin-bottom: 2rem;
+        text-align: center;
+        color: rgba(255, 255, 255, 0.95);
+      }
+
+      .seo-content h3 {
+        font-size: 1.2rem;
+        font-weight: 500;
+        margin: 2rem 0 1rem;
+        color: #e94560;
+      }
+
+      .problem-list {
+        list-style: none;
+        margin-bottom: 2rem;
+      }
+
+      .problem-list li {
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 8px;
+        border-left: 3px solid #e94560;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .problem-list li::before {
+        content: "😓 ";
+      }
+
+      .feature-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 1.5rem;
+        margin: 2rem 0;
+      }
+
+      .feature-card {
+        background: rgba(255, 255, 255, 0.05);
+        border-radius: 12px;
+        padding: 1.5rem;
+        border: 1px solid rgba(255, 255, 255, 0.1);
+      }
+
+      .feature-card .icon {
+        font-size: 2rem;
+        margin-bottom: 0.5rem;
+      }
+
+      .feature-card h4 {
+        font-size: 1rem;
+        font-weight: 500;
+        margin-bottom: 0.5rem;
+        color: rgba(255, 255, 255, 0.95);
+      }
+
+      .feature-card p {
+        font-size: 0.9rem;
+        color: rgba(255, 255, 255, 0.6);
+        line-height: 1.5;
+      }
+
+      .faq-section {
+        margin-top: 3rem;
+      }
+
+      .faq-item {
+        margin-bottom: 1.5rem;
+        background: rgba(255, 255, 255, 0.03);
+        border-radius: 8px;
+        padding: 1.5rem;
+      }
+
+      .faq-item dt {
+        font-weight: 500;
+        color: rgba(255, 255, 255, 0.95);
+        margin-bottom: 0.5rem;
+      }
+
+      .faq-item dt::before {
+        content: "Q. ";
+        color: #e94560;
+      }
+
+      .faq-item dd {
+        color: rgba(255, 255, 255, 0.7);
+        line-height: 1.6;
+        padding-left: 1.5rem;
+      }
+
+      .faq-item dd::before {
+        content: "A. ";
+        color: #00b894;
+        margin-left: -1.5rem;
+      }
+
+      .cta-section {
+        text-align: center;
+        margin-top: 3rem;
+        padding: 2rem;
+        background: rgba(233, 69, 96, 0.1);
+        border-radius: 16px;
+        border: 1px solid rgba(233, 69, 96, 0.3);
+      }
+
+      .cta-section p {
+        margin-bottom: 1rem;
+        color: rgba(255, 255, 255, 0.8);
+      }
+
+      .scroll-top-btn {
+        display: inline-block;
+        padding: 1rem 2rem;
+        background: linear-gradient(135deg, #e94560 0%, #ff6b6b 100%);
+        color: white;
+        text-decoration: none;
+        border-radius: 12px;
+        font-weight: 500;
+        transition: all 0.3s ease;
+      }
+
+      .scroll-top-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(233, 69, 96, 0.4);
+      }
+
+      footer {
+        text-align: center;
+        padding: 2rem;
+        color: rgba(255, 255, 255, 0.4);
+        font-size: 0.85rem;
+      }
+
+      footer a {
+        color: rgba(255, 255, 255, 0.6);
+      }
+
+      /* PWA（スタンドアロン）モードでSEOコンテンツを非表示 */
+      @media (display-mode: standalone) {
+        .seo-content,
+        .section-transition,
+        .scroll-indicator,
+        .floating-controls,
+        footer {
+          display: none;
+        }
+        .app-section {
+          min-height: 100vh;
+        }
+      }
     </style>
   </head>
   <body>
-    <div class="container">
-      <h1>🎙️ OtoRecMe <span class="subtitle">-おとりこみ-</span></h1>
-      <p class="description">
-        PCから流れる音声を録音して保存できます。<br />
-        Web会議・動画・音楽など、スピーカーから出る音をそのままキャプチャ。
-      </p>
-
-      <div class="timer" id="timer">00:00</div>
-
-      <div class="button-group">
-        <button id="startBtn">録音開始</button>
-        <button id="stopBtn" disabled>停止</button>
-      </div>
-
-      <div id="status">待機中</div>
-
-      <p class="hint">
-        ※ 録音開始時に画面共有ダイアログが表示されます。<br />
-        「システム音声を共有」にチェックを入れてください。
-      </p>
-      <p class="privacy-note">
-        🔒 録音データはあなたの端末にのみ保存されます。<br />
-        外部サーバーへの送信は一切行いません。
-      </p>
+    <!-- 追従するミニ操作UI -->
+    <div class="floating-controls" id="floatingControls">
+      <span class="floating-timer" id="floatingTimer">00:00</span>
+      <button id="floatingStartBtn">録音開始</button>
+      <button id="floatingStopBtn" disabled>停止</button>
+      <span class="floating-status" id="floatingStatus">待機中</span>
+      <span class="floating-hint">※「システム音声を共有」にチェック</span>
     </div>
 
+    <!-- アプリセクション -->
+    <section class="app-section" id="app">
+      <div class="container">
+        <h1>🎙️ OtoRecMe <span class="subtitle">-おとりこみ-</span></h1>
+        <p class="description">
+          PCから流れる音声を録音して保存できます。<br />
+          Web会議・動画・音楽など、スピーカーから出る音をそのままキャプチャ。
+        </p>
+
+        <div class="timer" id="timer">00:00</div>
+
+        <div class="button-group">
+          <button id="startBtn">録音開始</button>
+          <button id="stopBtn" disabled>停止</button>
+        </div>
+
+        <div id="status">待機中</div>
+
+        <p class="hint">
+          ※ 録音開始時に画面共有ダイアログが表示されます。<br />
+          「システム音声を共有」にチェックを入れてください。
+        </p>
+        <p class="privacy-note">
+          🔒 録音データはあなたの端末にのみ保存されます。<br />
+          外部サーバーへの送信は一切行いません。
+        </p>
+      </div>
+
+      <!-- スクロール誘導 -->
+      <div class="scroll-indicator">
+        <span>詳しい使い方・よくある質問</span>
+        <span class="arrow">↓</span>
+      </div>
+    </section>
+
+    <!-- セクション間のグラデーション -->
+    <div class="section-transition"></div>
+
+    <!-- SEOコンテンツセクション（PWAモードでは非表示） -->
+    <section class="seo-content" id="about">
+      <div class="content-wrapper">
+        <h2 id="problems">こんなことで困っていませんか？</h2>
+
+        <ul class="problem-list">
+          <li>
+            Web会議やオンラインセミナーの内容を<strong>録音して後から聞き返したい</strong>
+          </li>
+          <li>
+            PCで再生している動画や音楽を<strong>音声ファイルとして保存したい</strong>
+          </li>
+          <li>
+            ゲームやアプリのスピーカー出力を<strong>そのまま記録したい</strong>
+          </li>
+          <li>
+            専用ソフトのインストールなしで、<strong>手軽にPC音声をキャプチャしたい</strong>
+          </li>
+        </ul>
+
+        <h3 id="features">OtoRecMeでできること</h3>
+
+        <div class="feature-grid">
+          <div class="feature-card">
+            <div class="icon">🔊</div>
+            <h4>スピーカー出力を録音</h4>
+            <p>PCから流れる音声をそのままキャプチャ。ステレオミキサーなどは不要です。</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">💻</div>
+            <h4>インストール不要</h4>
+            <p>ブラウザだけで使えます。ソフトのダウンロードは必要ありません。</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">🔒</div>
+            <h4>完全プライバシー保護</h4>
+            <p>録音データは端末内に保存。外部サーバーへの送信は一切ありません。</p>
+          </div>
+          <div class="feature-card">
+            <div class="icon">📱</div>
+            <h4>アプリとしてインストール</h4>
+            <p>PWA対応でデスクトップアプリのように使えます。</p>
+          </div>
+        </div>
+
+        <div class="faq-section" id="faq">
+          <h3>よくある質問</h3>
+
+          <dl>
+            <div class="faq-item">
+              <dt>対応しているブラウザは？</dt>
+              <dd>
+                Chrome、Edge、その他Chromium系ブラウザに対応しています。Safari、Firefoxでは動作しません。
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>スマートフォンで使えますか？</dt>
+              <dd>
+                いいえ、PCのブラウザ専用です。スマートフォンやタブレットでは、システム音声の共有機能が利用できません。
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>録音データはどこに保存されますか？</dt>
+              <dd>
+                あなたのPC内に直接保存されます。クラウドやサーバーには一切アップロードされません。
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>録音形式は？</dt>
+              <dd>
+                WebM形式（Opus codec）で保存されます。一般的な音楽プレーヤーやVLCなどで再生できます。
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>オフラインでも使えますか？</dt>
+              <dd>
+                はい。アプリとしてインストール（PWA）した場合、オフラインでも動作します。初回アクセス時にキャッシュが作成され、以降はネット接続なしで録音できます。
+              </dd>
+            </div>
+            <div class="faq-item">
+              <dt>録音にあたっての注意事項はありますか？</dt>
+              <dd>
+                録音元のコンテンツ（動画、音楽、Web会議など）の利用規約を必ずご確認ください。録音した結果、また録音した音声を使用した結果起きるあらゆる問題について、製作者は責任を負いません。
+              </dd>
+            </div>
+          </dl>
+        </div>
+
+        <div class="cta-section">
+          <p>ソフトのインストール不要、無料で今すぐ使えます</p>
+          <a href="#app" class="scroll-top-btn">🎙️ 録音を始める</a>
+        </div>
+      </div>
+    </section>
+
+    <footer>
+      <p>
+        OtoRecMe - おとりこみ |
+        <a
+          href="https://github.com/procella0903/OtoRecMe"
+          target="_blank"
+          rel="noopener"
+          >GitHub</a
+        >
+        | MIT License
+      </p>
+    </footer>
+
     <script>
+      // Service Worker 登録
+      if ("serviceWorker" in navigator) {
+        window.addEventListener("load", () => {
+          navigator.serviceWorker
+            .register("/OtoRecMe/service-worker.js")
+            .then((registration) => {
+              console.log("Service Worker 登録成功:", registration.scope);
+            })
+            .catch((error) => {
+              console.log("Service Worker 登録失敗:", error);
+            });
+        });
+      }
+
       let mediaRecorder = null;
       let recordedChunks = [];
       let stream = null;
@@ -203,10 +732,38 @@
       let startTime = null;
       let isRecording = false; // 録音中フラグ
 
+      // メインUI要素
       const startBtn = document.getElementById("startBtn");
       const stopBtn = document.getElementById("stopBtn");
       const status = document.getElementById("status");
       const timer = document.getElementById("timer");
+
+      // フローティングUI要素
+      const floatingControls = document.getElementById("floatingControls");
+      const floatingStartBtn = document.getElementById("floatingStartBtn");
+      const floatingStopBtn = document.getElementById("floatingStopBtn");
+      const floatingTimer = document.getElementById("floatingTimer");
+      const floatingStatus = document.getElementById("floatingStatus");
+
+      // アプリセクションの位置を監視してフローティングUIを表示/非表示
+      const appSection = document.getElementById("app");
+      
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              // アプリセクションが見えている
+              floatingControls.classList.remove("visible");
+            } else {
+              // アプリセクションが見えていない（スクロールした）
+              floatingControls.classList.add("visible");
+            }
+          });
+        },
+        { threshold: 0.3 }
+      );
+      
+      observer.observe(appSection);
 
       // タブを閉じようとしたときの警告
       window.addEventListener("beforeunload", (event) => {
@@ -219,22 +776,50 @@
         }
       });
 
-      // タイマー更新
+      // タイマー更新（メインとフローティング両方）
       function updateTimer() {
         const elapsed = Math.floor((Date.now() - startTime) / 1000);
         const minutes = Math.floor(elapsed / 60)
           .toString()
           .padStart(2, "0");
         const seconds = (elapsed % 60).toString().padStart(2, "0");
-        timer.textContent = `${minutes}:${seconds}`;
+        const timeText = `${minutes}:${seconds}`;
+        timer.textContent = timeText;
+        floatingTimer.textContent = timeText;
       }
 
-      // 録音開始
-      startBtn.addEventListener("click", async () => {
+      // UI状態更新（メインとフローティング両方）
+      function updateUIState(recording, statusText, statusClass = "") {
+        // メインUI
+        startBtn.disabled = recording;
+        stopBtn.disabled = !recording;
+        status.innerHTML = statusText;
+        if (statusClass) {
+          status.classList.add(statusClass);
+        } else {
+          status.classList.remove("recording");
+        }
+
+        // フローティングUI
+        floatingStartBtn.disabled = recording;
+        floatingStopBtn.disabled = !recording;
+        // フローティングステータスはシンプルに
+        if (recording) {
+          floatingStatus.innerHTML = '<span class="recording-indicator"></span>録音中';
+        } else {
+          floatingStatus.textContent = statusText.replace(/<[^>]*>/g, '').substring(0, 20);
+        }
+      }
+
+      // 録音開始処理
+      async function startRecording() {
         try {
           // スマホ・タブレットなど、画面共有がサポートされていない環境のチェック
-          if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
-            status.textContent = "⚠️ このデバイスでは利用できません。PCのブラウザからアクセスしてください。";
+          if (
+            !navigator.mediaDevices ||
+            !navigator.mediaDevices.getDisplayMedia
+          ) {
+            updateUIState(false, "⚠️ このデバイスでは利用できません。PCのブラウザからアクセスしてください。");
             return;
           }
 
@@ -252,7 +837,7 @@
           const audioTracks = stream.getAudioTracks();
           if (audioTracks.length === 0) {
             throw new Error(
-              "音声が共有されていません。「システム音声を共有」にチェックを入れてください。"
+              "音声が共有されていません。「システム音声を共有」にチェックを入れてください。",
             );
           }
 
@@ -269,11 +854,11 @@
           });
 
           // 共有対象（タブ/ウィンドウ）が閉じられたときの自動停止
-          audioTracks[0].addEventListener('ended', () => {
+          audioTracks[0].addEventListener("ended", () => {
             if (mediaRecorder && mediaRecorder.state !== "inactive") {
               console.log("共有対象が終了しました。録音を自動停止します。");
-              status.textContent = "共有対象が終了しました。保存中...";
-              stopBtn.click();  // 停止ボタンをクリックして通常の停止処理を実行
+              updateUIState(false, "共有対象が終了しました。保存中...");
+              stopRecording();
             }
           });
 
@@ -314,14 +899,12 @@
                 const writable = await handle.createWritable();
                 await writable.write(blob);
                 await writable.close();
-                status.textContent = `保存完了: ${handle.name}`;
-                status.classList.remove("recording");
+                updateUIState(false, `保存完了: ${handle.name}`);
                 return;
               } catch (err) {
                 // ユーザーがキャンセルした場合
                 if (err.name === "AbortError") {
-                  status.textContent = "保存がキャンセルされました";
-                  status.classList.remove("recording");
+                  updateUIState(false, "保存がキャンセルされました");
                   return;
                 }
                 console.error("File System Access API error:", err);
@@ -364,8 +947,7 @@
 
             document.querySelector(".container").appendChild(downloadBtn);
 
-            status.textContent = "録音完了！下のボタンから保存してください";
-            status.classList.remove("recording");
+            updateUIState(false, "録音完了！下のボタンから保存してください");
           };
 
           // 録音開始
@@ -373,29 +955,26 @@
           isRecording = true;
 
           // UI更新
-          startBtn.disabled = true;
-          stopBtn.disabled = false;
-          status.innerHTML =
-            '<span class="recording-indicator"></span>録音中...';
-          status.classList.add("recording");
+          updateUIState(true, '<span class="recording-indicator"></span>録音中...', "recording");
 
           // タイマー開始
           startTime = Date.now();
           timer.textContent = "00:00";
+          floatingTimer.textContent = "00:00";
           timerInterval = setInterval(updateTimer, 1000);
         } catch (err) {
           console.error("録音開始エラー:", err);
-          status.textContent = `エラー: ${err.message}`;
+          updateUIState(false, `エラー: ${err.message}`);
 
           // ストリームをクリーンアップ
           if (stream) {
             stream.getTracks().forEach((track) => track.stop());
           }
         }
-      });
+      }
 
-      // 録音停止
-      stopBtn.addEventListener("click", () => {
+      // 録音停止処理
+      function stopRecording() {
         if (mediaRecorder && mediaRecorder.state !== "inactive") {
           mediaRecorder.stop();
         }
@@ -411,10 +990,17 @@
         }
 
         // UI更新
-        startBtn.disabled = false;
-        stopBtn.disabled = true;
         isRecording = false;
-      });
+        updateUIState(false, "待機中");
+      }
+
+      // イベントリスナー（メインUI）
+      startBtn.addEventListener("click", startRecording);
+      stopBtn.addEventListener("click", stopRecording);
+
+      // イベントリスナー（フローティングUI）
+      floatingStartBtn.addEventListener("click", startRecording);
+      floatingStopBtn.addEventListener("click", stopRecording);
     </script>
   </body>
 </html>
