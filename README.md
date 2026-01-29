@@ -57,4 +57,5 @@ OtoRecMe/
 
 ## ライセンス
 
-MIT License
+このソフトウェアはAI（Gemini、Claude）を使用して作成されました。
+作者は著作権を主張しません。詳細は [LICENSE](./LICENSE) を参照してください。
